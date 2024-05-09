@@ -3,6 +3,8 @@ package com.swd.agri.controller;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -24,8 +26,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.swd.agri.TestOnlyUserDetails;
 import com.swd.agri.constant.PlantCategoryConst;
 import com.swd.agri.constant.PlantOrganCategoryConst;
+import com.swd.agri.model.Member;
 import com.swd.agri.model.Plant;
 import com.swd.agri.model.PlantCategory;
 import com.swd.agri.model.PlantOrganCategory;
@@ -44,6 +48,8 @@ public class PlantControllerTest {
 	@Transactional
 	public void insert() throws Exception {
 		
+		Member member = TestOnlyUserDetails.getRoleAdminMember();
+		
 		String plantName = "魔蘋果";
 		PlantCategoryConst category = PlantCategoryConst.valueOf(2); //果實
 		String description = "尖叫聲難以忍受的蘋果";
@@ -55,6 +61,8 @@ public class PlantControllerTest {
 		
 		RequestBuilder requestBuilder = MockMvcRequestBuilders
 				.post("/plantCreate")
+				.with(httpBasic(member.getUsername(),member.getPassword()))
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody.toString());
 		
@@ -72,6 +80,8 @@ public class PlantControllerTest {
 	@Transactional
 	public void update() throws Exception {
 		
+		Member member = TestOnlyUserDetails.getRoleAdminMember();
+		
 		Integer plantId = 1;
 		String plantName = "魔蘋果";
 		PlantCategoryConst category = PlantCategoryConst.valueOf(3);
@@ -84,6 +94,8 @@ public class PlantControllerTest {
 		
 		RequestBuilder requestBuilder = MockMvcRequestBuilders
 				.put("/plant/{plantId}", plantId)
+				.with(httpBasic(member.getUsername(),member.getPassword()))
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody.toString());
 		
@@ -102,10 +114,14 @@ public class PlantControllerTest {
 	@Transactional
 	public void delete() throws Exception {
 		
+		Member member = TestOnlyUserDetails.getRoleAdminMember();
+		
 		Integer plantId = 1; //被產品大量使用的植物資訊應當無法被刪除
 		
 		RequestBuilder requestBuilder = MockMvcRequestBuilders
-				.delete("/plant/{plantId}", plantId);
+				.delete("/plant/{plantId}", plantId)
+				.with(httpBasic(member.getUsername(),member.getPassword()))
+				.with(csrf());
 		
 		assertThrows(Exception.class, () -> 
 			mockMvc.perform(requestBuilder).andReturn());
@@ -115,10 +131,13 @@ public class PlantControllerTest {
 	@Test
 	public void getById() throws Exception {
 		
+		Member member = TestOnlyUserDetails.getRoleAdminMember();
+		
 		Integer plantId = 1;
 		
 		RequestBuilder requestBuilder = MockMvcRequestBuilders
-				.get("/plant/{plantId}", plantId);
+				.get("/plant/{plantId}", plantId)
+				.with(httpBasic(member.getUsername(),member.getPassword()));
 		
 		mockMvc.perform(requestBuilder)
 			.andDo(print())
@@ -131,6 +150,8 @@ public class PlantControllerTest {
 	@Test
 	public void getPlants() throws Exception {
 		
+		Member member = TestOnlyUserDetails.getRoleAdminMember();
+		
 		List<PlantCategoryConst> category = List.of(
 				PlantCategoryConst.valueOf(2),
 				PlantCategoryConst.valueOf(3)				
@@ -142,6 +163,8 @@ public class PlantControllerTest {
 		
 		RequestBuilder requestBuilder = MockMvcRequestBuilders
 				.post("/plants")
+				.with(httpBasic(member.getUsername(),member.getPassword()))
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody.toString());
 		
@@ -164,9 +187,12 @@ public class PlantControllerTest {
 	@Test
 	public void plantCategoryExist() throws Exception {
 		
+		Member member = TestOnlyUserDetails.getRoleAdminMember();
+		
 		//僅測試是否有資料
 		RequestBuilder requestBuilder = MockMvcRequestBuilders
-				.get("/plant/category");
+				.get("/plant/category")
+				.with(httpBasic(member.getUsername(),member.getPassword()));
 		
 		assertDoesNotThrow(() -> {
 			mockMvc.perform(requestBuilder)
@@ -180,6 +206,8 @@ public class PlantControllerTest {
 	@Test
 	public void getPlantCategory() throws Exception {
 		
+		Member member = TestOnlyUserDetails.getRoleAdminMember();
+		
 		//測試資料正確度
 		
 		List<PlantCategoryConst> category = List.of(
@@ -192,7 +220,8 @@ public class PlantControllerTest {
 				);
 		
 		RequestBuilder requestBuilder = MockMvcRequestBuilders
-				.get("/plant/category");
+				.get("/plant/category")
+				.with(httpBasic(member.getUsername(),member.getPassword()));
 		
 		MvcResult result = mockMvc
 				.perform(requestBuilder)
@@ -213,10 +242,13 @@ public class PlantControllerTest {
 	@Test
 	public void getPlantOrganCategoryExist() throws Exception {
 		
+		Member member = TestOnlyUserDetails.getRoleAdminMember();
+		
 		PlantCategoryConst category = PlantCategoryConst.valueOf(2);
 		
 		RequestBuilder requestBuilder = MockMvcRequestBuilders
-				.get("/plant/{category}/organ", category.name());
+				.get("/plant/{category}/organ", category.name())
+				.with(httpBasic(member.getUsername(),member.getPassword()));
 		
 		assertDoesNotThrow(() -> {
 			mockMvc.perform(requestBuilder)
@@ -229,6 +261,8 @@ public class PlantControllerTest {
 	
 	@Test
 	public void getPlantOrganCategory() throws Exception {
+		
+		Member member = TestOnlyUserDetails.getRoleAdminMember();
 		
 		//測試資料正確度
 		
@@ -246,7 +280,8 @@ public class PlantControllerTest {
 		PlantCategoryConst category = PlantCategoryConst.valueOf(2);
 		
 		RequestBuilder requestBuilder = MockMvcRequestBuilders
-				.get("/plant/{category}/organ", category.name());
+				.get("/plant/{category}/organ", category.name())
+				.with(httpBasic(member.getUsername(),member.getPassword()));
 		
 		MvcResult result = mockMvc
 				.perform(requestBuilder)

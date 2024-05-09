@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 import java.nio.charset.StandardCharsets;
@@ -23,8 +25,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.swd.agri.TestOnlyUserDetails;
 import com.swd.agri.constant.PlantCategoryConst;
 import com.swd.agri.constant.PlantOrganCategoryConst;
+import com.swd.agri.model.Member;
 import com.swd.agri.model.Product;
 
 @SpringBootTest
@@ -39,7 +43,9 @@ public class ProductControllerTest {
 	
 	@Test
 	@Transactional
-	public void insert() throws Exception{
+	public void insert() throws Exception {
+		
+		Member member = TestOnlyUserDetails.getRoleAdminMember();
 		
 		String productName = "早晨玉米";
 		Integer marketId = 1;
@@ -65,6 +71,8 @@ public class ProductControllerTest {
 		
 		RequestBuilder requestBuilder = MockMvcRequestBuilders
 				.post("/plantProductCreate")
+				.with(httpBasic(member.getUsername(),member.getPassword()))
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody.toString());
 		
@@ -85,6 +93,8 @@ public class ProductControllerTest {
 	@Transactional
 	public void update() throws Exception {
 		
+		Member member = TestOnlyUserDetails.getRoleAdminMember();
+		
 		Integer productId = 1;
 		String productName = "魔蘋果";
 		Integer price = 2000;
@@ -99,6 +109,8 @@ public class ProductControllerTest {
 		
 		RequestBuilder requestBuilder = MockMvcRequestBuilders
 				.put("/product/{productId}", productId)
+				.with(httpBasic(member.getUsername(),member.getPassword()))
+				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody.toString());
 		
@@ -117,10 +129,14 @@ public class ProductControllerTest {
 	@Transactional
 	public void delete() throws Exception {
 		
+		Member member = TestOnlyUserDetails.getRoleAdminMember();
+		
 		Integer productId = 1;
 		
 		RequestBuilder requestBuilder = MockMvcRequestBuilders
-				.delete("/product/{productId}", productId);
+				.delete("/product/{productId}", productId)
+				.with(httpBasic(member.getUsername(),member.getPassword()))
+				.with(csrf());
 		
 		mockMvc.perform(requestBuilder)
 			//.andDo(print())
@@ -132,10 +148,13 @@ public class ProductControllerTest {
 	@Test
 	public void getByProductId() throws Exception {
 		
+		Member member = TestOnlyUserDetails.getRoleAdminMember();
+		
 		Integer productId = 1;
 		
 		RequestBuilder requestBuilder = MockMvcRequestBuilders
-				.get("/product/{productId}", productId);
+				.get("/product/{productId}", productId)
+				.with(httpBasic(member.getUsername(),member.getPassword()));
 		
 		mockMvc.perform(requestBuilder)
 			//.andDo(print())
@@ -148,12 +167,15 @@ public class ProductControllerTest {
 	@Test
 	public void getByMarketId() throws Exception {
 		
+		Member member = TestOnlyUserDetails.getRoleAdminMember();
+		
 		Integer marketId = 1;
 		String marketName = "合眾農場";
 		
 		RequestBuilder requestBuilder = MockMvcRequestBuilders
 				.get("/products/market/{marketId}", marketId)
-				.characterEncoding("UTF-8");
+				.characterEncoding("UTF-8")
+				.with(httpBasic(member.getUsername(),member.getPassword()));
 		
 		MvcResult result = mockMvc
 				.perform(requestBuilder)
@@ -177,6 +199,8 @@ public class ProductControllerTest {
 	@Test
 	public void getProducts() throws Exception {
 		
+		Member member = TestOnlyUserDetails.getRoleAdminMember();
+		
 		PlantCategoryConst category = PlantCategoryConst.valueOf("ANGIOSPERMS");
 		PlantOrganCategoryConst organ = PlantOrganCategoryConst.valueOf("PLANT_FRUIT");
 		
@@ -190,6 +214,8 @@ public class ProductControllerTest {
 				.param("organ", organ.name())
 				//.contentType(MediaType.APPLICATION_JSON)
 				//.content(requestParams.toString())
+				.with(httpBasic(member.getUsername(),member.getPassword()))
+				.with(csrf())
 				;
 		
 		MvcResult result = mockMvc

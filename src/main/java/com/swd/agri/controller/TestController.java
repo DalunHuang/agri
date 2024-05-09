@@ -39,5 +39,20 @@ public class TestController {
 		return model;
 	}
 	
+	@PostMapping("/csrftest")
+	public ModelAndView csrfTestPost(@ModelAttribute ModelAndView model) {
+		
+		List<String> strs = new ArrayList<String>();
+		strs.add("test1");
+		strs.add("test2");
+		
+		model.setViewName("right_html");
+		model.addObject("results", strs);
+		
+		
+		//return "right_html";
+		return model;
+	}
+	
 	
 }
