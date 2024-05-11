@@ -145,13 +145,13 @@ public class ProductDaoImpl implements ProductDao {
 			params.put("market_name", queryParams.getMarketName());
 		}
 		
-		if (!queryParams.getCategory().name().equals("NON")) {
+		if (!"NON".equals(queryParams.getCategory().name())) {
 			sql += " AND PC.CATEGORY_NAME = :category";
 			params.put("category", queryParams.getCategory().name());
 		}
 		
-		if (!queryParams.getOrgan().name().equals("ALL") &&
-			!queryParams.getOrgan().name().equals("NON")) 
+		if (!"ALL".equals(queryParams.getOrgan().name()) &&
+			!"NON".equals(queryParams.getOrgan().name())) 
 		{
 			//sql += " AND :organ IN (SELECT ORGAN_DESCRIPTION FROM PLANT_ORGAN WHERE PLANT_ORGAN_ID IN  ";
 			
