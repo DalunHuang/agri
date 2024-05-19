@@ -7,9 +7,7 @@
 <body>
     <h1>Search Results</h1>
     <ul>
-        <!-- 使用Thymeleaf的循环来遍历搜索结果列表 -->
         <li th:each="result : ${results}">
-            <!-- 在每个搜索结果的li元素中展示结果的内容 -->
             <p th:text="${result}"></p>
         </li>
     </ul>
